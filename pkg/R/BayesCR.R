@@ -525,7 +525,7 @@ print.BayesCR <- function(x, ...) {
   Sxc <- exp(-cumUx)
   return(Sxc)
 }
-
+  
 # ------------------------------ #
 # ---- Inference functions: ----
 # ------------------------------ #
