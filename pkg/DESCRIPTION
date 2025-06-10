@@ -11,3 +11,4 @@ Imports: snowfall (>= 1.84-6-2)
 Description: Estimates cause specific mortality parameters under a competing risk framework using Bayesian inference. It includes tools for data checking and visualisation using generic functions (e.g., plot and summary).
 License: GPL (>= 3)
 LazyData: yes
+BugReports: https://github.com/fercol/paramDemo/issues

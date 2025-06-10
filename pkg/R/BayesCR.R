@@ -57,8 +57,8 @@ BayesCR.default <- function(object, niter = 11000, burnin = 1001,
   sfInit(parallel = TRUE, cpus = ncpus)
   
   # Load functions to CPUS:
-  # sfLibrary()
-  sfSource("devel/code/sourceToCPUS.R")
+  sfLibrary(BayesCompRisk)
+  # sfSource("devel/code/sourceToCPUS.R")
   
   # Load variables to CPUS:
   # sfExport(list = cpuVars)
