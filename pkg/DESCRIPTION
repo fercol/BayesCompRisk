@@ -1,0 +1,13 @@
+Package: BayesCompRisk
+Type: Package
+Title: Bayesian inference on competing risks for cause of death analysis
+Version: 1.0.0
+Date: 2025-06-10
+Authors@R: c(person("Fernando", "Colchero", role = c("aut", "cre"), 
+            email = "fernando_colchero@eva.mpg.de"))
+Maintainer: Fernando Colchero <fernando_colchero@eva.mpg.de>
+Depends: R (>= 3.5.0)
+Imports: snowfall (>= 1.84-6-2)
+Description: Estimates cause specific mortality parameters under a competing risk framework using Bayesian inference. It includes tools for data checking and visualisation using generic functions (e.g., plot and summary).
+License: GPL (>= 3)
+LazyData: yes

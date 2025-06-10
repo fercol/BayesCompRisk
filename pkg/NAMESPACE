@@ -1,0 +1,18 @@
+#Exports:
+export("BayesCR", "BayesCR.default", "plot.BayesCR", "print.BayesCR", "summary.BayesCR")
+
+# Exports:
+import("snowfall")
+importFrom("grDevices", "adjustcolor", "rainbow")
+importFrom("graphics", "axis", "layout", "legend", "lines", "mtext",
+             "par", "plot", "polygon")
+importFrom("stats", "as.formula", "cor", "density", "dnorm",
+             "model.matrix", "pnorm", "qnorm", "quantile", "rbeta",
+             "rnorm", "runif", "sd", "terms", "var")
+importFrom("utils", "packageDescription")
+
+#S3 methods:
+S3method("BayesCR", "default")
+S3method("plot", "BayesCR")
+S3method("print", "BayesCR")
+S3method("summary", "BayesCR")
