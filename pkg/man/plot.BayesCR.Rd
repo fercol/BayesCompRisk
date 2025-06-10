@@ -54,7 +54,7 @@ FILL UP
 ## Check BayesCR outputs:
 ## ----------------------- #
 ## Load output example:
-data("BayesCRout", package = "BayesCR")
+data("BayesCRout", package = "BayesCompRisk")
 
 ## Print results:
 summary(BayesCRout, digits = 3)
@@ -81,8 +81,8 @@ plot(BayesCRout, type = 'demorates', noCIs = TRUE, logMort = TRUE)
 plot(BayesCRout, type = "gof")
 
 ## Plot cumulative incidences:
-plot(out, type = "cumInc")
+plot(BayesCRout, type = "cumInc")
 }
 
-\keyword{FILL UP}
+\keyword{methods}
 

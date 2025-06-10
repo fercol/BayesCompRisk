@@ -13,7 +13,8 @@
 \usage{
  BayesCR(object, \dots)
 
-\method{BayesCR}{default} (object, niter = 11000, burnin = 1001, thinning = 20,  nsim = 4, ncpus = 4, UPDJUMP = TRUE, jumpSD = NULL)
+\method{BayesCR}{default} (object, niter = 11000, burnin = 1001, thinning = 20,  
+         nsim = 4, ncpus = 4, UPDJUMP = TRUE, jumpSD = NULL, \dots)
 
 }
 
@@ -34,6 +35,8 @@
 
 	\item{jumpSD }{Numerical vector of jump standard deviations in case the analysis was carried out previously.}
 
+	\item{\dots }{Additional arguments to be passed to function \code{basta} (see \code{details})}
+	
 }
 
 \details{
@@ -79,14 +82,14 @@ FILL UP
 \examples{
 \donttest{
 ## Load data:
-data("BayesCRdata", package = "BayesCR")
+data("BayesCRdata", package = "BayesCompRisk")
 
 ## Run analysis:
-out <- BayesCR(object, nsim = 4, ncpus = 4, 
+out <- BayesCR(BayesCRdata, nsim = 4, ncpus = 4, 
                UPDJUMP = TRUE, jumpSD = NULL)
 }
 \dontshow{
-data("BayesCRout", package = "BayesCR")
+data("BayesCRout", package = "BayesCompRisk")
 out <- BayesCRout
 }
 ## ----------------------- #

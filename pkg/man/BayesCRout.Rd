@@ -13,7 +13,7 @@ This dataset is the output of a BayesCR analysis on the simulated data \code{\li
 }
 \examples{
 ## Load output example:
-data("BayesCRout", package = "BayesCR")
+data("BayesCRout", package = "BayesCompRisk")
 
 ## Print results:
 summary(BayesCRout, digits = 3)

@@ -12,7 +12,7 @@
 BayesCR <- function(object, ...) UseMethod("BayesCR")
 BayesCR.default <- function(object, niter = 11000, burnin = 1001, 
                             thinning = 20, nsim = 4, ncpus = 4, 
-                            UPDJUMP = TRUE, jumpSD = NULL) {
+                            UPDJUMP = TRUE, jumpSD = NULL, ...) {
   # start timer:
   StartFull <- Sys.time()
   
@@ -57,7 +57,8 @@ BayesCR.default <- function(object, niter = 11000, burnin = 1001,
   sfInit(parallel = TRUE, cpus = ncpus)
   
   # Load functions to CPUS:
-  sfLibrary(BayesCompRisk)
+  sfLibrary("BayesCompRisk", character.only = TRUE,
+            warn.conflicts = FALSE)
   # sfSource("devel/code/sourceToCPUS.R")
   
   # Load variables to CPUS:
@@ -606,7 +607,7 @@ summary.BayesCR <- function(object, ...) {
 # ---- Demographic functions: ----
 # -------------------------------- #
 # Mortality:
-.CalcMu <- function(theta, ...) UseMethod(".CalcMu")
+.CalcMu <- function(theta, x) UseMethod(".CalcMu")
 .CalcMu.numeric <- function(theta, x) {
   exp(theta["a0"] - theta["a1"] * x) + theta["c"] + 
     exp(theta["b0"] + theta["b1"] * x) / 
@@ -621,7 +622,7 @@ summary.BayesCR <- function(object, ...) {
 }
 
 # Cummulative hazard:
-.CalcU <- function(theta, ...) UseMethod(".CalcU")
+.CalcU <- function(theta, x) UseMethod(".CalcU")
 .CalcU.matrix <- function(theta, x) {
   exp(theta[, "a0"]) / theta[, "a1"] * (1 - exp(-theta[, "a1"] * x)) +
     theta[, "c"] * x + log(1 + theta[, "b2"] * 

@@ -7,7 +7,7 @@ Example of cause of death data for BayesCR analysis.
 \description{
 Simulated data on causes of death.
 }
-\usage{data("BayesCRdat")}
+\usage{data("BayesCRdata")}
 \format{
   A data frame with 400 observations on the following 2 variables:
   \describe{
@@ -21,7 +21,7 @@ The data was simulated assuming three different causes of death with bathtub-log
 \examples{
 \donttest{
 ## Load data:
-data("BayesCRdata", package = "BayesCR")
+data("BayesCRdata", package = "BayesCompRisk")
 
 ## Run analysis:
 out <- BayesCR(BayesCRdata, nsim = 4, ncpus = 4, 

@@ -1,6 +1,6 @@
 Package: BayesCompRisk
 Type: Package
-Title: Bayesian inference on competing risks for cause of death analysis
+Title: Bayesian Inference on Competing Risks for Cause of Death Analysis
 Version: 1.0.0
 Date: 2025-06-10
 Authors@R: c(person("Fernando", "Colchero", role = c("aut", "cre"), 
@@ -11,4 +11,5 @@ Imports: snowfall (>= 1.84-6-2)
 Description: Estimates cause specific mortality parameters under a competing risk framework using Bayesian inference. It includes tools for data checking and visualisation using generic functions (e.g., plot and summary).
 License: GPL (>= 3)
 LazyData: yes
+LazyDataCompression: xz
 BugReports: https://github.com/fercol/paramDemo/issues
