@@ -42,6 +42,7 @@ BayesCR.default <- function(object, niter = 11000, burnin = 1001,
                        .UpdateJumps, .rtnorm, .dtnorm, jumpSD = NULL, 
                        UPDJUMP = TRUE)
   jumpSD <- jumpMCMC$jumpSD
+  parObj$jump <- jumpSD
   EndJump <- Sys.time()
   cat("Done\n")
   compTime <- round(as.numeric(EndJump-StartJump, 
@@ -197,7 +198,13 @@ plot.BayesCR <- function(x, type = "traces", noCIs = FALSE, logMort = FALSE,
       thName <- namesFull[ip]
       xthe <- x$theta[, thName]
       sthe <- x$coefficients[thName, 1:4]
+      low <- x$coefficients[thName, "Lower"]
       dens <- density(xthe)
+      if (low == 0) {
+        id0 <- which(dens$x >= 0)
+        dens$x <- dens$x[id0]
+        dens$y <- dens$y[id0]
+      }
       id95 <- which(dens$x >= sthe["Lower"] & dens$x <= sthe["Upper"])
       ylim <- c(0, max(dens$y))
       xlim <- quantile(xthe, probs = c(0.001, 0.999))
@@ -222,7 +229,7 @@ plot.BayesCR <- function(x, type = "traces", noCIs = FALSE, logMort = FALSE,
     par(mfrow = c(ceiling(np / 2), 2), mar = c(4, 4, 1, 1))
     for (ip in 1:np) {
       thName <- namesSimp[ip]
-      idth <- grep(thName, namesFull)
+      idth <- which(namesFull %in% sprintf("%s.%s", thName, causes))
       denl <- lapply(1:nCause, function(ic) {
         iname <- namesFull[idth[ic]]
         xthe <- x$theta[, iname]
