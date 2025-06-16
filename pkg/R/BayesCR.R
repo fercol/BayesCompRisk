@@ -128,6 +128,20 @@ BayesCR.default <- function(object, niter = 11000, burnin = 1001,
   depType <- rep("D", dataObj$n)
   PLE$All <- .CalcPLE(ageLast = dataObj$x, departType = depType)
   
+  # Calculate proportional contribution:
+  for (ic in 1:dataObj$nCause) {
+    if (ic == 1) {
+      muMat <- demoQuant$mort[[ic]][1, demoQuant$cuts]
+    } else {
+      muMat <- cbind(muMat, demoQuant$mort[[ic]][1, demoQuant$cuts])
+    }
+  }
+  colnames(muMat) <- dataObj$causes
+  
+  muAll <- demoQuant$mort$All[1, demoQuant$cuts]
+  propMort <- t(apply(muMat, 1, cumsum))
+  propMort <- propMort / muAll
+  
   # end timer:
   EndFull <- Sys.time()
   compTime <- .CalcTimeDiff(Start = StartFull, End = EndFull)
@@ -141,9 +155,10 @@ BayesCR.default <- function(object, niter = 11000, burnin = 1001,
   fullOut <- list(coefficients = coeffs, x = demoQuant$x, 
                   mort = demoQuant$mort, surv = demoQuant$surv, 
                   cuts = demoQuant$cuts, theta = thetaMat, 
-                  likePost = likePostMat, DIC = DIC, PLE = PLE,
-                  runs = outMCMC, data = dataObj, settings = settings, 
-                  keep = idKeep, params = parObj, convergence = convergence)
+                  likePost = likePostMat, propMort = propMort, DIC = DIC, 
+                  PLE = PLE, runs = outMCMC, data = dataObj, 
+                  settings = settings, keep = idKeep, params = parObj, 
+                  convergence = convergence)
   
   class(fullOut) <- "BayesCR"
   return(fullOut)
@@ -152,9 +167,21 @@ BayesCR.default <- function(object, niter = 11000, burnin = 1001,
 # Plotting:
 plot.BayesCR <- function(x, type = "traces", noCIs = FALSE, logMort = FALSE,
                          ...) {
+  # Verify type:
+  plTypes <- c("traces", "densities", "densComp", "demorates", "propMort",
+               "gof", "cumulInc")
+  if (!type %in% plTypes) {
+    stop("Incorrect type argument. Options are:\n", 
+          paste(plTypes, collapse = ", "))
+  }
+  
   # User par settings:
   oldpar <- par(no.readonly = TRUE)
   on.exit(par(oldpar))
+  
+  # Extract additional arguments:
+  args <- list(...)
+  namesArgs <- names(args)
   
   # Cause name and number:
   causes <- x$data$causes
@@ -168,6 +195,9 @@ plot.BayesCR <- function(x, type = "traces", noCIs = FALSE, logMort = FALSE,
     npc <- x$params$pc
   }
   if (type == "traces") {
+    # ================= #
+    # ==== Traces: ==== #
+    # ================= #
     nsim <- x$settings$nsim
     if (nsim <= 12) {
       Palette <- c('#A6CEE3', '#1F78B4', '#B2DF8A', '#33A02C',
@@ -193,6 +223,9 @@ plot.BayesCR <- function(x, type = "traces", noCIs = FALSE, logMort = FALSE,
       }
     }
   } else if (type == "densities") {
+    # ==================== #
+    # ==== Densities: ==== #
+    # ==================== #
     par(mfrow = c(np, nCause), mar = c(4, 4, 1, 1))
     
     for (ip in 1:npc) {
@@ -219,6 +252,9 @@ plot.BayesCR <- function(x, type = "traces", noCIs = FALSE, logMort = FALSE,
       lines(dens$x, dens$y, col = "orange")
     }
   } else if (type == "densComp") {
+    # ================================ #
+    # ==== Densities comparative: ==== #
+    # ================================ #
     if (nCause <= 8) {
       Palette <- c('#1B9E77', '#D95F02', '#7570B3', '#E7298A',
                    '#66A61E', '#E6AB02', '#A6761D', 
@@ -263,6 +299,9 @@ plot.BayesCR <- function(x, type = "traces", noCIs = FALSE, logMort = FALSE,
     }
     legend("topright", causes, col = Palette, pch = 15)
   } else if (type == "demorates") {
+    # ============================ #
+    # ==== Demographic rates: ==== #
+    # ============================ #
     par(mfrow = c(2, 1), mar = c(4, 4, 2, 1))
     if (nCause <= 7) {
       Palette <- c('#1B9E77', '#D95F02', '#7570B3', '#E7298A',
@@ -270,9 +309,19 @@ plot.BayesCR <- function(x, type = "traces", noCIs = FALSE, logMort = FALSE,
     } else {
       Palette <- rainbow(nCause)
     }
-    icut <- x$cuts
-    xx <- x$x[icut]
-    xlim <- range(xx)
+    # plotting limits:
+    if ("xlim" %in% namesArgs) {
+      xlim <- args$xlim
+      icut <- which(x$x[x$cuts] >= xlim[1] & 
+                            x$x[x$cuts] <= xlim[2])
+      xx <- x$x[icut]
+    } else {
+      icut <- x$cuts
+      xx <- x$x[icut]
+      xlim <- range(xx)
+    }
+
+    # Make plots:
     for (idem in c("surv", "mort")) {
       if (idem == "surv") {
         yy <- x$surv
@@ -326,7 +375,10 @@ plot.BayesCR <- function(x, type = "traces", noCIs = FALSE, logMort = FALSE,
         
       }
     }
-  } else if (type == "cumInc") {
+  } else if (type == "cumulInc") {
+    # =============================== #
+    # ==== Cumulative incidence: ==== #
+    # =============================== #
     PLE <- x$PLE
     xx <- x$x
     par(mfrow = c(ceiling(nCause / 2), 2))
@@ -341,7 +393,58 @@ plot.BayesCR <- function(x, type = "traces", noCIs = FALSE, logMort = FALSE,
               border = NA)
       lines(xx, 1 - yy["Mean", ], col = "orange", lwd = 2)
     }
+  } else if (type == "propMort") {
+    # ================================= #
+    # ==== Proportional mortality: ==== #
+    # ================================= #
+    # Colors per cause:
+    if (nCause <= 7) {
+      Palette <- c('#1B9E77', '#D95F02', '#7570B3', '#E7298A',
+                   '#66A61E', '#E6AB02', '#A6761D')[1:nCause]
+    } else {
+      Palette <- rainbow(nCause)
+    }
+    names(Palette) <- x$data$causes
+    
+    # Extract ages:
+    xx <- x$x[x$cuts]
+    nx <- length(xx)
+    
+    # plotting limits:
+    if ("xlim" %in% namesArgs) {
+      xlim <- args$xlim
+    } else {
+      xlim <- range(xx)
+    }
+    ylim <- c(0, 1)
+
+    # Plot contributions per cause:
+    layout(mat = matrix(c(1, 2), nrow = 2, ncol = 1), widths = 1, 
+           heights = c(1, 0.2))
+    par(mar = c(2, 4, 1, 1))
+    plot(xlim, ylim, col = NA, xlab = "", ylab = "")
+    mtext("Proportional contribution to mortality", side = 2, line = 3, las = 3,
+          cex = 1.25)
+    for (ic in 1:out$data$nCause) {
+      if (ic == 1) {
+        yl <- rep(0, nx)
+      } else {
+        yl <- x$propMort[, ic - 1]
+      }
+      yu <- x$propMort[, ic]
+      polygon(c(xx, rev(xx)), c(yl, rev(yu)), col = Palette[x$data$causes[ic]],
+              border = NA)
+    }
+    par(mar = c(0, 4, 0, 1))
+    plot(c(0, 1), c(0, 1), col = NA, xlab = "", ylab = "", axes = FALSE)
+    text(0.5, 0.95, "Age", cex = 1.25, xpd = NA)
+    legend("bottom", x$data$causes, col = Palette, 
+           pch = 15, lwd = NA, pt.cex = 2, 
+           bty = "n", ncol = ceiling(x$data$nCause / 3))
   } else if (type == "gof") {
+    # ========================== #
+    # ==== Goodness of fit: ==== #
+    # ========================== #
     PLE <- x$PLE
     xx <- x$x
     par(mfrow = c(ceiling((nCause + 1) / 2), 2))
