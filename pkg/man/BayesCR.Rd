@@ -58,6 +58,8 @@ FILL UP
 
     \item{likePost }{a matrix with the log likelihood and log posterior after convergence and thinning.}
 
+    \item{propMort }{a matrix with the proportional contributions of each cause to the overall mortality.}
+
     \item{DIC }{basic deviance information criterion (DIC) calculations to be used for model choice (Spiegelhalter \emph{et al.} 2002, Celeux \emph{et al.} 2006). If any of the parameter chains did not converge, then the returned value is \code{NA}.}
 
     \item{PLE }{list object with the product limit estimator per cause of death and for all combined, called by functions \code{plot} or \code{\link{plot.BayesCR}}.}
