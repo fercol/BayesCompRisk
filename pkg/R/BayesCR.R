@@ -255,10 +255,9 @@ plot.BayesCR <- function(x, type = "traces", noCIs = FALSE, logMort = FALSE,
     # ================================ #
     # ==== Densities comparative: ==== #
     # ================================ #
-    if (nCause <= 8) {
+    if (nCause <= 7) {
       Palette <- c('#1B9E77', '#D95F02', '#7570B3', '#E7298A',
-                   '#66A61E', '#E6AB02', '#A6761D', 
-                   '#666666')[1:nCause]
+                   '#66A61E', '#E6AB02', '#A6761D')[1:nCause]
     } else {
       Palette <- rainbow(nCause)
     }
@@ -303,11 +302,16 @@ plot.BayesCR <- function(x, type = "traces", noCIs = FALSE, logMort = FALSE,
     # ==== Demographic rates: ==== #
     # ============================ #
     par(mfrow = c(2, 1), mar = c(4, 4, 2, 1))
-    if (nCause <= 7) {
-      Palette <- c('#1B9E77', '#D95F02', '#7570B3', '#E7298A',
-                   '#66A61E', '#E6AB02', '#A6761D')[1:nCause]
+    # Colors:
+    if ("col" %in% namesArgs) {
+      Palette <- args$col
     } else {
-      Palette <- rainbow(nCause)
+      if (nCause <= 7) {
+        Palette <- c('#1B9E77', '#D95F02', '#7570B3', '#E7298A',
+                     '#66A61E', '#E6AB02', '#A6761D')[1:nCause]
+      } else {
+        Palette <- rainbow(nCause)
+      }
     }
     # plotting limits:
     if ("xlim" %in% namesArgs) {
@@ -397,15 +401,19 @@ plot.BayesCR <- function(x, type = "traces", noCIs = FALSE, logMort = FALSE,
     # ================================= #
     # ==== Proportional mortality: ==== #
     # ================================= #
-    # Colors per cause:
-    if (nCause <= 7) {
-      Palette <- c('#1B9E77', '#D95F02', '#7570B3', '#E7298A',
-                   '#66A61E', '#E6AB02', '#A6761D')[1:nCause]
+    # Colors:
+    if ("col" %in% namesArgs) {
+      Palette <- args$col
     } else {
-      Palette <- rainbow(nCause)
+      if (nCause <= 7) {
+        Palette <- c('#1B9E77', '#D95F02', '#7570B3', '#E7298A',
+                     '#66A61E', '#E6AB02', '#A6761D')[1:nCause]
+      } else {
+        Palette <- rainbow(nCause)
+      }
+      names(Palette) <- x$data$causes
     }
-    names(Palette) <- x$data$causes
-    
+
     # Extract ages:
     xx <- x$x[x$cuts]
     nx <- length(xx)
@@ -423,8 +431,8 @@ plot.BayesCR <- function(x, type = "traces", noCIs = FALSE, logMort = FALSE,
            heights = c(1, 0.2))
     par(mar = c(2, 4, 1, 1))
     plot(xlim, ylim, col = NA, xlab = "", ylab = "")
-    mtext("Proportional contribution to mortality", side = 2, line = 3, las = 3,
-          cex = 1.25)
+    mtext("Proportional contribution to mortality", side = 2, line = 3, 
+          las = 3, cex = 1.25)
     for (ic in 1:out$data$nCause) {
       if (ic == 1) {
         yl <- rep(0, nx)
