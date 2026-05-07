@@ -5,3 +5,4 @@
 *.Rproj
 devel/
 .DS_Store
+.positai

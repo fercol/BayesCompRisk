@@ -255,11 +255,17 @@ plot.BayesCR <- function(x, type = "traces", noCIs = FALSE, logMort = FALSE,
     # ================================ #
     # ==== Densities comparative: ==== #
     # ================================ #
-    if (nCause <= 7) {
-      Palette <- c('#1B9E77', '#D95F02', '#7570B3', '#E7298A',
-                   '#66A61E', '#E6AB02', '#A6761D')[1:nCause]
+    # Colors:
+    if ("col" %in% namesArgs) {
+      Palette <- args$col
     } else {
-      Palette <- rainbow(nCause)
+      if (nCause <= 7) {
+        Palette <- c('#1B9E77', '#D95F02', '#7570B3', '#E7298A',
+                     '#66A61E', '#E6AB02', '#A6761D')[1:nCause]
+      } else {
+        Palette <- rainbow(nCause)
+      }
+      names(Palette) <- causes
     }
     
     par(mfrow = c(ceiling(np / 2), 2), mar = c(4, 4, 1, 1))
@@ -312,6 +318,7 @@ plot.BayesCR <- function(x, type = "traces", noCIs = FALSE, logMort = FALSE,
       } else {
         Palette <- rainbow(nCause)
       }
+      names(Palette) <- causes
     }
     # plotting limits:
     if ("xlim" %in% namesArgs) {
@@ -354,11 +361,12 @@ plot.BayesCR <- function(x, type = "traces", noCIs = FALSE, logMort = FALSE,
         })))
         
       }
+      
       plot(xlim, ylim, col = NA, xlab = "Age", ylab = ylab)
       for (ic in 1:(nCause + 1)) {
         yyi <- yy[[ic]][, icut]
         if (ic <= nCause) {
-          cols <- Palette[ic]
+          cols <- Palette[causes[ic]]
           lwd <- 2
         } else {
           cols <- "grey40"
@@ -388,7 +396,7 @@ plot.BayesCR <- function(x, type = "traces", noCIs = FALSE, logMort = FALSE,
     par(mfrow = c(ceiling(nCause / 2), 2))
     for (ic in 1:nCause) {
       plot(PLE[[ic]]$Ages, 1 - PLE[[ic]]$ple, type = 's', main = causes[ic],
-           ylim = c(0, 1), xlab = "Age", ylab = "Survival")
+           ylim = c(0, 1), xlab = "Age", ylab = "Cumulative incidence")
       yy <- x$surv[[ic]]
       
       polygon(x = c(xx, rev(xx)), 
@@ -411,7 +419,7 @@ plot.BayesCR <- function(x, type = "traces", noCIs = FALSE, logMort = FALSE,
       } else {
         Palette <- rainbow(nCause)
       }
-      names(Palette) <- x$data$causes
+      names(Palette) <- causes
     }
 
     # Extract ages:
@@ -440,15 +448,15 @@ plot.BayesCR <- function(x, type = "traces", noCIs = FALSE, logMort = FALSE,
         yl <- x$propMort[, ic - 1]
       }
       yu <- x$propMort[, ic]
-      polygon(c(xx, rev(xx)), c(yl, rev(yu)), col = Palette[x$data$causes[ic]],
+      polygon(c(xx, rev(xx)), c(yl, rev(yu)), col = Palette[causes[ic]],
               border = NA)
     }
     par(mar = c(0, 4, 0, 1))
     plot(c(0, 1), c(0, 1), col = NA, xlab = "", ylab = "", axes = FALSE)
     text(0.5, 0.95, "Age", cex = 1.25, xpd = NA)
-    legend("bottom", x$data$causes, col = Palette, 
+    legend("bottom", causes, col = Palette[causes], 
            pch = 15, lwd = NA, pt.cex = 2, 
-           bty = "n", ncol = ceiling(x$data$nCause / 3))
+           bty = "n", ncol = ceiling(nCause / 3))
   } else if (type == "gof") {
     # ========================== #
     # ==== Goodness of fit: ==== #
