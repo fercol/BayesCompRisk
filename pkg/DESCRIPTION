@@ -2,7 +2,7 @@ Package: BayesCompRisk
 Type: Package
 Title: Bayesian Inference on Competing Risks for Cause of Death Analysis
 Version: 1.0.0
-Date: 2025-06-10
+Date: 2026-05-07
 Authors@R: c(person("Fernando", "Colchero", role = c("aut", "cre"), 
             email = "fernando_colchero@eva.mpg.de"))
 Maintainer: Fernando Colchero <fernando_colchero@eva.mpg.de>
@@ -12,4 +12,4 @@ Description: Estimates cause specific mortality parameters under a competing ris
 License: GPL (>= 3)
 LazyData: yes
 LazyDataCompression: xz
-BugReports: https://github.com/fercol/paramDemo/issues
+BugReports: https://github.com/fercol/BayesCompRisk/issues
