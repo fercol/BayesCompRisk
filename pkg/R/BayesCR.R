@@ -605,18 +605,103 @@ summary.BayesCR <- function(object, ...) {
   # Long ages (repeated by causes):
   xlong <- rep(object$age, each = nCause)
   
+  # ---- Addition 2026-07-10 ---- #
+  # Add age at truncation: #
+  xtlong <- rep(object$ageEntry, each = nCause)
+  
   # One vector per cause:
   oneCause <- rep(1, nCause)
   
   # Create data object:
-  dataObj <- list(x = object$age, iCause = object$cause, xlong = xlong, n = n, 
+  dataObj <- list(x = object$age, xt = object$ageEntry, iCause = object$cause, 
+                  xlong = xlong, xtlong = xtlong, n = n, 
                   causes = uCauses, nCause = nCause, causeMat = causeMat, 
                   causeLong = causeLong, oneCause = oneCause)
+  # ---- End of Addition 2026-07-10 ---- #
   return(dataObj)
 }
 
+# Set the default mortality parameters:
+.SetDefaultTheta  <- function(algObj) {
+  if (algObj$model == "EX") {
+    nTh <- 1
+    startTh <- 0.2 
+    jumpTh <- 0.1
+    priorMean <- 0.06
+    priorSd <- 1
+    nameTh <- "b0"
+    lowTh <- 0
+    jitter <- 0.5
+  } else if (algObj$model == "GO") {
+    nTh <- 2 
+    startTh <- c(-2, 0.01) 
+    jumpTh <- c(0.1, 0.1)
+    priorMean <- c(-3, 0.01)
+    priorSd <- c(5, 1) # 2023-02-18
+    nameTh <- c("b0", "b1")
+    lowTh <- c(-Inf, 0)
+    if (algObj$negSenescence) lowTh[2] <- -Inf
+    jitter <- c(0.5, 0.2) 
+    if (algObj$shape == "bathtub") {
+      lowTh <- c(-Inf, 0)
+    }
+  } else if (algObj$model == "WE") {
+    nTh <- 2
+    startTh <- c(1.5, 0.2) 
+    jumpTh <- c(.01, 0.1)
+    priorMean <- c(1.5, .05)
+    priorSd <- c(1, 1)
+    nameTh <- c("b0", "b1")
+    lowTh <- c(0, 0)
+    jitter <- c(0.5, 0.2) 
+  } else if (algObj$model == "LO") {
+    nTh <- 3 
+    startTh <- c(-2, 0.01, 1e-04) 
+    jumpTh <- c(0.1, 0.1, 0.1) 
+    priorMean <- c(-3, 0.01, 1e-10)
+    priorSd <- c(1, 1, 1)
+    nameTh <- c("b0", "b1", "b2")
+    lowTh <- c(-Inf, 0, 0)
+    jitter <- c(0.5, 0.2, 0.5) 
+  } else if (algObj$model == "GG") {
+    nTh <- 3 
+    startTh <- c(0.1, 10, 10) 
+    jumpTh <- c(0.01, 0.1, 0.1) 
+    priorMean <- c(0.5, 20, 20)
+    priorSd <- c(1, 10, 10)
+    nameTh <- c("b0", "b1", "b2")
+    lowTh <- c(0, 1, 1)
+    jitter <- c(0.2, 5, 5) 
+  }
+  if (algObj$shape == "Makeham") {
+    nTh <- nTh + 1 
+    startTh <- c(0, startTh) 
+    jumpTh <- c(0.1, jumpTh) 
+    priorMean <- c(0, priorMean)
+    priorSd <- c(1, priorSd)
+    nameTh <- c("c", nameTh)
+    lowTh <- c(0, lowTh)
+    jitter <- c(0.25, jitter) 
+  } else if (algObj$shape == "bathtub") {
+    nTh <- nTh + 3 
+    startTh <- c(-0.1, 0.6, 0, startTh)
+    jumpTh <- c(0.1, 0.1, 0.1, jumpTh) 
+    priorMean <- c(-2, 0.01, 0, priorMean)
+    priorSd <- c(1, 5, 1, priorSd) # 2023-02-18
+    nameTh <- c("a0", "a1", "c", nameTh)
+    lowTh <- c(-Inf, 0, 0, lowTh)
+    jitter <- c(0.5, 0.2, 0.2, jitter) 
+  }
+  defaultTheta  <- list(length = nTh, start = startTh, jump = jumpTh, 
+                        priorMean = priorMean, priorSd = priorSd, name = nameTh, 
+                        lower = lowTh, jitter = jitter)
+  attr(defaultTheta, "model") = algObj$model
+  attr(defaultTheta, "shape") = algObj$shape
+  return(defaultTheta)
+}
+
 # Create Parameter object:
-.CreateParObj <- function(dataObj) {
+.CreateParObj <- function(dataObj, defTheta) {
   thetaNames <- c("a0", "a1", "c", "b0", "b1", "b2")
   p <- length(thetaNames)
   theta <- matrix(c(-1, 2, 0.001, -5, 0.3, 2), nrow = dataObj$nCause,
@@ -898,17 +983,36 @@ summary.BayesCR <- function(object, ...) {
   # Survival:
   Sx <- exp(- Ux)
   
+  # ---- Addition 2026-07-10 ---- #
+  # Add age at truncation: #
+  # Calculate cumulative hazards for all causes:
+  Uixt <- .CalcU(theta = thetaObj$iThetaLong, x = dataObj$xtlong)
+  
+  # Matrix of individual hazards:
+  UitMat <- t(matrix(Uixt, nrow = dataObj$nCause, ncol = dataObj$n))
+  
+  # Additive cumulative hazard:
+  Uxt <- c(UitMat %*% dataObj$oneCause)
+  
+  # Survival:
+  Sxt <- exp(- Uxt)
+  
   # pdf of ages at death:
   fx <- Sx * muix
   
   # output:
-  demoList <- list(muix = muix, Uix = Uix, Ux = Ux, Sx = Sx, fx = fx)
+  demoList <- list(muix = muix, Uix = Uix, Ux = Ux, Sx = Sx, fx = fx,
+                   Uixt = Uixt, Uxt = Uxt, Sxt = Sxt)
+  # ---- End of Addition 2026-07-10 ---- #
   return(demoList)
 }
 
 # Likelihood and posterior:
 .CalcLikePost <- function(demoObj, thetaObj, parObj) {
-  iLike <- -demoObj$Ux + log(demoObj$muix)
+  # ---- Addition 2026-07-10 ---- #
+  # Add age at truncation: #
+  iLike <- -demoObj$Ux + log(demoObj$muix) + demoObj$Uxt
+  # ---- End of Addition 2026-07-10 ---- #
   like <- sum(iLike)
   post <- like + sum(thetaObj$prior)
   return(list(iLike = iLike, like = like, post = post))
