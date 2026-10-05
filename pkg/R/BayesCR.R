@@ -122,11 +122,13 @@ BayesCR.default <- function(object, niter = 11000, burnin = 1001,
   for (ic in 1:dataObj$nCause) {
     depType <- rep("C", dataObj$n)
     depType[which(dataObj$iCause == dataObj$causes[ic])] <- "D"
-    plei <- .CalcPLE(ageLast = dataObj$x, departType = depType)
+    plei <- .CalcPLE(ageLast = dataObj$x, ageFirst = dataObj$xt, 
+                     departType = depType)
     PLE[[dataObj$causes[ic]]] <- plei
   }
   depType <- rep("D", dataObj$n)
-  PLE$All <- .CalcPLE(ageLast = dataObj$x, departType = depType)
+  PLE$All <- .CalcPLE(ageLast = dataObj$x, ageFirst = dataObj$xt, 
+                      departType = depType)
   
   # Calculate proportional contribution:
   for (ic in 1:dataObj$nCause) {
